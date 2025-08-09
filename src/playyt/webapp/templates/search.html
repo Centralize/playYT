@@ -21,6 +21,13 @@
         {% for v in results %}
           <div class="column is-one-third">
             <div class="card">
+              {% if v.thumbnail %}
+              <div class="card-image">
+                <figure class="image is-16by9">
+                  <img src="{{ v.thumbnail }}" alt="{{ v.title }} thumbnail">
+                </figure>
+              </div>
+              {% endif %}
               <div class="card-content">
                 <p class="title is-6"><a href="/video/{{ v.id }}">{{ v.title }}</a></p>
                 <p class="subtitle is-7">{{ v.channel }}</p>

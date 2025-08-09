@@ -85,7 +85,7 @@
                               <div class="media-content">
                                 <p class="title is-6 mb-1">{{ video.title }}</p>
                                 <p class="subtitle is-7 has-text-grey">
-                                  {{ video.extension.upper() }} • {{ video.filename }}
+                                  <i class="fas fa-file mr-1"></i>{{ video.extension.upper() }} Format
                                 </p>
                               </div>
                             </div>
@@ -98,13 +98,15 @@
                           </td>
                           <td>
                             <div class="buttons">
-                              <button class="button is-small is-primary is-modern" 
-                                      onclick="openVideo('{{ video.filename }}')" 
+                              <button class="button is-small is-primary is-modern"
+                                      type="button"
+                                      onclick="openVideo('{{ video.filename }}')"
                                       title="Open video">
                                 <i class="fas fa-play"></i>
                               </button>
-                              <button class="button is-small is-danger is-modern" 
-                                      onclick="deleteVideo('{{ video.filename }}', {{ loop.index }})" 
+                              <button class="button is-small is-danger is-modern"
+                                      type="button"
+                                      onclick="deleteVideo('{{ video.filename }}', {{ loop.index }})"
                                       title="Delete video">
                                 <i class="fas fa-trash"></i>
                               </button>

@@ -1,41 +1,38 @@
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Search - {{ title }}</title>
-    <link rel="stylesheet" href="/static/styles.css" />
-  </head>
-  <body>
-    <header>
-      <h1>{{ title }}</h1>
-      <nav>
-        <a href="/">Home</a>
-        <a href="/search">Search</a>
-      </nav>
-    </header>
-    <main>
-      <h2>Search</h2>
-      <form method="get" action="/search">
-        <input type="text" name="q" value="{{ query or '' }}" placeholder="Search videos..." />
-        <button type="submit">Search</button>
-      </form>
+{% extends "base.html" %}
+{% block content %}
+  <div class="content">
+    <h1 class="title">Search</h1>
+  </div>
+  <form method="get" action="/search" class="field has-addons">
+    <div class="control is-expanded">
+      <input class="input" type="text" name="q" value="{{ query or '' }}" placeholder="Search videos..." />
+    </div>
+    <div class="control">
+      <button class="button is-primary" type="submit">Search</button>
+    </div>
+  </form>
 
-      {% if results is not none %}
-        <h3>Results</h3>
-        {% if results %}
-          <ul>
-            {% for v in results %}
-              <li>
-                <strong>{{ v.title }}</strong> — {{ v.channel }} ({{ v.duration }})
-              </li>
-            {% endfor %}
-          </ul>
-        {% else %}
-          <p>No results found.</p>
-        {% endif %}
-      {% endif %}
-    </main>
-  </body>
-</html>
+  {% if results is not none %}
+    <div class="content">
+      <h2 class="subtitle">Results</h2>
+    </div>
+    {% if results %}
+      <div class="box">
+        <ul>
+          {% for v in results %}
+            <li class="mb-2">
+              <div>
+                <strong>{{ v.title }}</strong>
+                <span class="tag is-light ml-2">{{ v.channel }}</span>
+                <span class="tag is-info is-light ml-1">{{ v.duration }}</span>
+              </div>
+            </li>
+          {% endfor %}
+        </ul>
+      </div>
+    {% else %}
+      <div class="notification is-warning is-light">No results found.</div>
+    {% endif %}
+  {% endif %}
+{% endblock %}
 

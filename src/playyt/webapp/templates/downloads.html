@@ -1,0 +1,221 @@
+{% extends "base.html" %}
+{% block content %}
+  <section class="hero is-modern is-medium">
+    <div class="hero-body">
+      <div class="container">
+        <div class="has-text-centered">
+          <h1 class="title is-2 has-text-white">
+            <i class="fas fa-download mr-3"></i>
+            Downloads
+          </h1>
+          <p class="subtitle is-5 has-text-white-ter">
+            Manage your downloaded videos
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <!-- Stats Cards -->
+      <div class="columns is-centered mb-6">
+        <div class="column is-8">
+          <div class="columns">
+            <div class="column">
+              <div class="card is-modern">
+                <div class="card-content has-text-centered">
+                  <i class="fas fa-video fa-2x has-text-primary mb-3"></i>
+                  <p class="title is-4">{{ stats.total_files }}</p>
+                  <p class="subtitle is-6">Total Videos</p>
+                </div>
+              </div>
+            </div>
+            <div class="column">
+              <div class="card is-modern">
+                <div class="card-content has-text-centered">
+                  <i class="fas fa-hdd fa-2x has-text-info mb-3"></i>
+                  <p class="title is-4">{{ stats.total_size_formatted }}</p>
+                  <p class="subtitle is-6">Total Size</p>
+                </div>
+              </div>
+            </div>
+            <div class="column">
+              <div class="card is-modern">
+                <div class="card-content has-text-centered">
+                  <i class="fas fa-clock fa-2x has-text-success mb-3"></i>
+                  <p class="title is-6">{{ stats.latest_download or 'None' }}</p>
+                  <p class="subtitle is-6">Latest Download</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Downloads List -->
+      {% if downloads %}
+        <div class="columns is-centered">
+          <div class="column is-10">
+            <div class="card is-modern">
+              <div class="card-content">
+                <h2 class="title is-4 mb-5">
+                  <i class="fas fa-list mr-2"></i>
+                  Downloaded Videos
+                </h2>
+                
+                <div class="table-container">
+                  <table class="table is-fullwidth is-hoverable">
+                    <thead>
+                      <tr>
+                        <th><i class="fas fa-file-video mr-1"></i>Video</th>
+                        <th><i class="fas fa-hdd mr-1"></i>Size</th>
+                        <th><i class="fas fa-calendar mr-1"></i>Downloaded</th>
+                        <th><i class="fas fa-cogs mr-1"></i>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {% for video in downloads %}
+                        <tr id="video-{{ loop.index }}">
+                          <td>
+                            <div class="media">
+                              <div class="media-left">
+                                <i class="fas fa-play-circle fa-2x has-text-primary"></i>
+                              </div>
+                              <div class="media-content">
+                                <p class="title is-6 mb-1">{{ video.title }}</p>
+                                <p class="subtitle is-7 has-text-grey">
+                                  {{ video.extension.upper() }} • {{ video.filename }}
+                                </p>
+                              </div>
+                            </div>
+                          </td>
+                          <td>
+                            <span class="tag is-info is-modern">{{ video.size_formatted }}</span>
+                          </td>
+                          <td>
+                            <span class="has-text-grey">{{ video.modified_formatted }}</span>
+                          </td>
+                          <td>
+                            <div class="buttons">
+                              <button class="button is-small is-primary is-modern" 
+                                      onclick="openVideo('{{ video.filename }}')" 
+                                      title="Open video">
+                                <i class="fas fa-play"></i>
+                              </button>
+                              <button class="button is-small is-danger is-modern" 
+                                      onclick="deleteVideo('{{ video.filename }}', {{ loop.index }})" 
+                                      title="Delete video">
+                                <i class="fas fa-trash"></i>
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      {% endfor %}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      {% else %}
+        <div class="columns is-centered">
+          <div class="column is-6">
+            <div class="has-text-centered">
+              <div class="notification is-info is-light">
+                <i class="fas fa-info-circle fa-3x mb-4"></i>
+                <h3 class="title is-4">No Downloads Yet</h3>
+                <p class="mb-4">You haven't downloaded any videos yet. Start by searching for videos and downloading them!</p>
+                <a href="/search" class="button is-primary is-modern">
+                  <i class="fas fa-search mr-2"></i>
+                  Search Videos
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      {% endif %}
+    </div>
+  </section>
+
+  <!-- Delete Confirmation Modal -->
+  <div class="modal" id="deleteModal">
+    <div class="modal-background" onclick="closeDeleteModal()"></div>
+    <div class="modal-card">
+      <header class="modal-card-head">
+        <p class="modal-card-title">
+          <i class="fas fa-exclamation-triangle mr-2"></i>
+          Confirm Delete
+        </p>
+        <button class="delete" type="button" aria-label="close" onclick="closeDeleteModal()"></button>
+      </header>
+      <section class="modal-card-body">
+        <p>Are you sure you want to delete this video? This action cannot be undone.</p>
+        <p class="has-text-weight-semibold mt-3" id="deleteFileName"></p>
+      </section>
+      <footer class="modal-card-foot">
+        <button class="button is-danger is-modern" type="button" onclick="confirmDelete()">
+          <i class="fas fa-trash mr-2"></i>
+          Delete
+        </button>
+        <button class="button" type="button" onclick="closeDeleteModal()">Cancel</button>
+      </footer>
+    </div>
+  </div>
+
+  <script>
+    let deleteTarget = null;
+    let deleteRowIndex = null;
+
+    function openVideo(filename) {
+      // In a real app, you might want to stream the video or open it in a player
+      alert(`Opening ${filename}\n\nNote: This would typically open the video in a media player or stream it in the browser.`);
+    }
+
+    function deleteVideo(filename, rowIndex) {
+      deleteTarget = filename;
+      deleteRowIndex = rowIndex;
+      document.getElementById('deleteFileName').textContent = filename;
+      document.getElementById('deleteModal').classList.add('is-active');
+    }
+
+    function closeDeleteModal() {
+      document.getElementById('deleteModal').classList.remove('is-active');
+      deleteTarget = null;
+      deleteRowIndex = null;
+    }
+
+    async function confirmDelete() {
+      if (!deleteTarget) return;
+
+      try {
+        const response = await fetch(`/api/downloads/${encodeURIComponent(deleteTarget)}`, {
+          method: 'DELETE'
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+          // Remove the row from the table
+          const row = document.getElementById(`video-${deleteRowIndex}`);
+          if (row) {
+            row.remove();
+          }
+          
+          // Show success message (you could add a toast notification here)
+          closeDeleteModal();
+          
+          // Reload page to update stats
+          setTimeout(() => {
+            window.location.reload();
+          }, 1000);
+        } else {
+          alert(`Error deleting file: ${result.error}`);
+        }
+      } catch (error) {
+        alert(`Error deleting file: ${error.message}`);
+      }
+    }
+  </script>
+{% endblock %}

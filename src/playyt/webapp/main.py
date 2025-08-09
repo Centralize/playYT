@@ -31,6 +31,7 @@ except Exception:  # pragma: no cover
     download_video = None
 
 from playyt.services.search import search_videos as demo_search, get_video as demo_get_video  # noqa: E402
+from playyt.services.downloads import scan_downloads, delete_download, get_downloads_stats  # noqa: E402
 
 # Mount static files
 app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
@@ -116,4 +117,27 @@ def download_video_endpoint(video_id: str, request: DownloadRequest):
         return result
     else:
         return {"success": False, "error": "Download functionality not available"}
+
+
+@app.get("/downloads", response_class=HTMLResponse)
+def downloads_page(request: Request):
+    """Display downloaded videos page"""
+    downloads = scan_downloads()
+    stats = get_downloads_stats()
+    return templates.TemplateResponse(
+        "downloads.html",
+        {
+            "request": request,
+            "title": "Downloads - playYT",
+            "downloads": downloads,
+            "stats": stats
+        },
+    )
+
+
+@app.delete("/api/downloads/{filename}", response_class=JSONResponse)
+def delete_download_endpoint(filename: str):
+    """Delete a downloaded file"""
+    result = delete_download(filename)
+    return result
 

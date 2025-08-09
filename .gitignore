@@ -29,3 +29,7 @@ dist/
 .cache/
 logs/
 
+# Downloads - exclude video files but keep directory structure
+downloads/*
+!downloads/.gitkeep
+

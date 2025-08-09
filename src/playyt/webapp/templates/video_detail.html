@@ -82,6 +82,10 @@
                     <i class="fas fa-list mr-2"></i>
                     Add to Playlist
                   </button>
+                  <button class="button is-success is-modern is-fullwidth" type="button" onclick="openDownloadModal()">
+                    <i class="fas fa-download mr-2"></i>
+                    Download Video
+                  </button>
                   <button class="button is-info is-modern is-fullwidth" type="button">
                     <i class="fas fa-share mr-2"></i>
                     Share Video
@@ -113,6 +117,162 @@
         </div>
       </div>
     </section>
+
+    <!-- Download Modal -->
+    <div class="modal" id="downloadModal">
+      <div class="modal-background" onclick="closeDownloadModal()"></div>
+      <div class="modal-card">
+        <header class="modal-card-head">
+          <p class="modal-card-title">
+            <i class="fas fa-download mr-2"></i>
+            Download Video
+          </p>
+          <button class="delete" type="button" aria-label="close" onclick="closeDownloadModal()"></button>
+        </header>
+        <section class="modal-card-body">
+          <div id="downloadContent">
+            <div class="field">
+              <label class="label">Select Quality</label>
+              <div class="control">
+                <div class="select is-fullwidth" id="formatSelect">
+                  <select>
+                    <option>Loading formats...</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+            <div class="notification is-info is-light">
+              <i class="fas fa-info-circle mr-2"></i>
+              Choose your preferred video quality and format. Higher quality files will be larger.
+            </div>
+          </div>
+          <div id="downloadProgress" class="download-hidden">
+            <div class="notification is-success is-light">
+              <i class="fas fa-spinner fa-spin mr-2"></i>
+              Downloading video... This may take a few minutes.
+            </div>
+            <progress class="progress is-success" max="100">60%</progress>
+          </div>
+          <div id="downloadResult" class="download-hidden"></div>
+        </section>
+        <footer class="modal-card-foot">
+          <button class="button is-success is-modern" type="button" onclick="startDownload()">
+            <i class="fas fa-download mr-2"></i>
+            Download
+          </button>
+          <button class="button" type="button" onclick="closeDownloadModal()">Cancel</button>
+        </footer>
+      </div>
+    </div>
+
+    <script>
+      const videoId = '{{ video.id }}';
+      let availableFormats = [];
+
+      function openDownloadModal() {
+        document.getElementById('downloadModal').classList.add('is-active');
+        loadFormats();
+      }
+
+      function closeDownloadModal() {
+        document.getElementById('downloadModal').classList.remove('is-active');
+        // Reset modal state
+        document.getElementById('downloadContent').classList.remove('download-hidden');
+        document.getElementById('downloadProgress').classList.add('download-hidden');
+        document.getElementById('downloadResult').classList.add('download-hidden');
+      }
+
+      async function loadFormats() {
+        try {
+          const response = await fetch(`/api/video/${videoId}/formats`);
+          const data = await response.json();
+
+          const select = document.querySelector('#formatSelect select');
+          select.innerHTML = '';
+
+          if (data.formats && data.formats.length > 0) {
+            availableFormats = data.formats;
+
+            // Add best quality option
+            const bestOption = document.createElement('option');
+            bestOption.value = 'best';
+            bestOption.textContent = 'Best Quality (Recommended)';
+            select.appendChild(bestOption);
+
+            // Add specific format options
+            data.formats.forEach(format => {
+              if (format.resolution && format.ext) {
+                const option = document.createElement('option');
+                option.value = format.format_id;
+                option.textContent = `${format.resolution} (${format.ext.toUpperCase()}) - ${format.quality}`;
+                select.appendChild(option);
+              }
+            });
+          } else {
+            const option = document.createElement('option');
+            option.textContent = 'No formats available';
+            select.appendChild(option);
+          }
+        } catch (error) {
+          console.error('Error loading formats:', error);
+          const select = document.querySelector('#formatSelect select');
+          select.innerHTML = '<option>Error loading formats</option>';
+        }
+      }
+
+      async function startDownload() {
+        const selectedFormat = document.querySelector('#formatSelect select').value;
+
+        // Show progress
+        document.getElementById('downloadContent').classList.add('download-hidden');
+        document.getElementById('downloadProgress').classList.remove('download-hidden');
+
+        try {
+          const response = await fetch(`/api/video/${videoId}/download`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ format_id: selectedFormat })
+          });
+
+          const result = await response.json();
+
+          // Hide progress
+          document.getElementById('downloadProgress').classList.add('download-hidden');
+
+          // Show result
+          const resultDiv = document.getElementById('downloadResult');
+          resultDiv.classList.remove('download-hidden');
+
+          if (result.success) {
+            resultDiv.innerHTML = `
+              <div class="notification is-success is-light">
+                <i class="fas fa-check-circle mr-2"></i>
+                ${result.message}
+              </div>
+            `;
+          } else {
+            resultDiv.innerHTML = `
+              <div class="notification is-danger is-light">
+                <i class="fas fa-exclamation-triangle mr-2"></i>
+                Download failed: ${result.error}
+              </div>
+            `;
+          }
+        } catch (error) {
+          document.getElementById('downloadProgress').classList.add('download-hidden');
+          const resultDiv = document.getElementById('downloadResult');
+          resultDiv.classList.remove('download-hidden');
+          resultDiv.innerHTML = `
+            <div class="notification is-danger is-light">
+              <i class="fas fa-exclamation-triangle mr-2"></i>
+              Download failed: ${error.message}
+            </div>
+          `;
+        }
+      }
+    </script>
   {% endif %}
 {% endblock %}
 

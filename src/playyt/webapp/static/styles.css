@@ -269,3 +269,8 @@ html {
   white-space: pre-wrap;
 }
 
+/* Download Modal */
+.download-hidden {
+  display: none;
+}
+

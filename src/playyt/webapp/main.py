@@ -11,7 +11,7 @@ STATIC_DIR = BASE_DIR / "static"
 app = FastAPI(title="playYT Web UI")
 
 # Import services lazily to keep clear boundaries
-from playyt.services.search import search_videos  # noqa: E402
+from playyt.services.search import search_videos, get_video  # noqa: E402
 
 # Mount static files
 app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
@@ -51,4 +51,19 @@ def health():
 @app.get("/api/search", response_class=JSONResponse)
 def api_search(q: str = Query(..., alias="q")):
     return {"query": q, "results": search_videos(q)}
+
+
+@app.get("/video/{video_id}", response_class=HTMLResponse)
+def video_detail(request: Request, video_id: str):
+    video = get_video(video_id)
+    if not video:
+        return templates.TemplateResponse(
+            "video_detail.html",
+            {"request": request, "title": "Not found - playYT", "video": None},
+            status_code=404,
+        )
+    return templates.TemplateResponse(
+        "video_detail.html",
+        {"request": request, "title": video["title"] + " - playYT", "video": video},
+    )
 

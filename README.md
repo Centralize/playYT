@@ -7,7 +7,7 @@ This README is for quickstart and user-facing documentation. For the project pla
 ## Quick Start
 
 - Requires Python 3.x
-- Create a virtual environment and install dependencies (none yet):
+- Create a virtual environment and install dependencies:
 
 ```bash
 python -m venv .venv
@@ -16,7 +16,16 @@ python -m venv .venv
 # macOS/Linux
 source .venv/bin/activate
 pip install -U pip
+pip install -r requirements.txt
 ```
+
+### Run the Web UI (dev)
+
+```bash
+uvicorn playyt.webapp.main:app --reload --port 8000
+```
+
+Then open http://localhost:8000 in your browser.
 
 ## Status
 

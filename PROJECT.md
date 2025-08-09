@@ -19,6 +19,7 @@ playYT is a highly customizable YouTube client written in Python 3. It focuses o
 ### Components
 - Core: command dispatch, configuration, logging, module discovery, and lifecycle management.
 - Module system: loadable Python modules that register capabilities (commands, hooks, services).
+- Web UI: FastAPI app serving HTML pages and JSON APIs, with Jinja2 templates and static assets.
 - IO/Adapters: optional adapters to external tools (e.g., yt-dlp/ffmpeg) exposed via modules.
 
 ### Module System (Concept)
@@ -51,6 +52,7 @@ Example module shape (illustrative):
 - Language: Python 3.x
 - OS: Generic (Windows/macOS/Linux)
 - Packaging: start with venv + pip; consider Poetry later
+- Web: FastAPI + Uvicorn, Jinja2 for templating
 - Dependencies: kept minimal in core; modules can declare their own
 
 ---
@@ -58,6 +60,7 @@ Example module shape (illustrative):
 ## Directory Layout (proposed)
 - src/playyt/ (core package)
 - src/playyt/modules/ (first-party modules)
+- src/playyt/webapp/ (FastAPI app: main.py, templates/, static/)
 - tests/ (unit/integration tests)
 - scripts/ (helper scripts)
 - config/ (sample configs)
@@ -79,6 +82,8 @@ This is a proposal; evolve as needed during implementation.
 Suggested commands:
 - python -m venv .venv && .venv/bin/pip install -U pip
 - pip install -r requirements.txt (if present)
+- pip install -r requirements-dev.txt (optional, if present)
+- uvicorn playyt.webapp.main:app --reload --port 8000
 - pytest
 
 ---

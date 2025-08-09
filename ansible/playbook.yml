@@ -53,3 +53,7 @@
           echo "No requirements.txt"; \
         fi
 
+    - name: Print how to run the app (generic)
+      debug:
+        msg: "Run: {{ venv_path }}/bin/uvicorn playyt.webapp.main:app --host 0.0.0.0 --port 8000"
+

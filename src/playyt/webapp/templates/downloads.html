@@ -177,8 +177,8 @@
     let deleteRowIndex = null;
 
     function openVideo(filename) {
-      // In a real app, you might want to stream the video or open it in a player
-      alert(`Opening ${filename}\n\nNote: This would typically open the video in a media player or stream it in the browser.`);
+      // Open video in the built-in player
+      window.open(`/player/${encodeURIComponent(filename)}`, '_blank');
     }
 
     function deleteVideo(filename, rowIndex) {

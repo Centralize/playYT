@@ -1,7 +1,9 @@
 from pathlib import Path
 from fastapi import FastAPI, Request, Query, HTTPException
-from fastapi.responses import HTMLResponse, JSONResponse, FileResponse
+from fastapi.responses import HTMLResponse, JSONResponse, FileResponse, StreamingResponse
 from pydantic import BaseModel
+import os
+from pathlib import Path
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
@@ -169,4 +171,136 @@ def download_file_endpoint(filename: str):
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error accessing file: {str(e)}")
+
+
+@app.get("/player/{filename}", response_class=HTMLResponse)
+def video_player_page(request: Request, filename: str):
+    """Video player page for streaming videos"""
+    downloads_dir = get_downloads_directory()
+    file_path = downloads_dir / filename
+
+    # Security check: ensure file is in downloads directory
+    try:
+        file_path = file_path.resolve()
+        downloads_dir = downloads_dir.resolve()
+
+        if not str(file_path).startswith(str(downloads_dir)):
+            raise HTTPException(status_code=400, detail="Invalid file path")
+
+        if not file_path.exists() or not file_path.is_file():
+            raise HTTPException(status_code=404, detail="Video not found")
+
+        # Get video info
+        video_info = {
+            "filename": filename,
+            "title": Path(filename).stem,
+            "size": file_path.stat().st_size,
+            "extension": Path(filename).suffix.lower()
+        }
+
+        return templates.TemplateResponse(
+            "video_player.html",
+            {
+                "request": request,
+                "title": f"Playing: {video_info['title']} - playYT",
+                "video": video_info
+            },
+        )
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error accessing video: {str(e)}")
+
+
+@app.get("/api/stream/{filename}")
+def stream_video(request: Request, filename: str):
+    """Stream video file with range support for HTML5 video player"""
+    downloads_dir = get_downloads_directory()
+    file_path = downloads_dir / filename
+
+    # Security check: ensure file is in downloads directory
+    try:
+        file_path = file_path.resolve()
+        downloads_dir = downloads_dir.resolve()
+
+        if not str(file_path).startswith(str(downloads_dir)):
+            raise HTTPException(status_code=400, detail="Invalid file path")
+
+        if not file_path.exists() or not file_path.is_file():
+            raise HTTPException(status_code=404, detail="Video not found")
+
+        file_size = file_path.stat().st_size
+        range_header = request.headers.get('range')
+
+        # Determine content type based on file extension
+        content_type_map = {
+            '.mp4': 'video/mp4',
+            '.webm': 'video/webm',
+            '.avi': 'video/x-msvideo',
+            '.mov': 'video/quicktime',
+            '.mkv': 'video/x-matroska',
+            '.flv': 'video/x-flv',
+            '.wmv': 'video/x-ms-wmv',
+            '.m4v': 'video/x-m4v'
+        }
+
+        file_extension = Path(filename).suffix.lower()
+        content_type = content_type_map.get(file_extension, 'video/mp4')
+
+        if range_header:
+            # Handle range requests for video seeking
+            range_match = range_header.replace('bytes=', '').split('-')
+            start = int(range_match[0]) if range_match[0] else 0
+            end = int(range_match[1]) if range_match[1] else file_size - 1
+
+            def generate_chunk():
+                with open(file_path, 'rb') as video_file:
+                    video_file.seek(start)
+                    remaining = end - start + 1
+                    while remaining:
+                        chunk_size = min(8192, remaining)
+                        chunk = video_file.read(chunk_size)
+                        if not chunk:
+                            break
+                        remaining -= len(chunk)
+                        yield chunk
+
+            headers = {
+                'Content-Range': f'bytes {start}-{end}/{file_size}',
+                'Accept-Ranges': 'bytes',
+                'Content-Length': str(end - start + 1),
+                'Content-Type': content_type,
+            }
+
+            return StreamingResponse(
+                generate_chunk(),
+                status_code=206,
+                headers=headers
+            )
+        else:
+            # Serve entire file
+            def generate_full():
+                with open(file_path, 'rb') as video_file:
+                    while True:
+                        chunk = video_file.read(8192)
+                        if not chunk:
+                            break
+                        yield chunk
+
+            headers = {
+                'Content-Length': str(file_size),
+                'Accept-Ranges': 'bytes',
+                'Content-Type': content_type,
+            }
+
+            return StreamingResponse(
+                generate_full(),
+                headers=headers
+            )
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error streaming video: {str(e)}")
 

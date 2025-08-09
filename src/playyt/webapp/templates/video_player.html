@@ -1,0 +1,190 @@
+{% extends "base.html" %}
+{% block content %}
+  <section class="section">
+    <div class="container">
+      <div class="columns is-centered">
+        <div class="column is-10">
+          <div class="card is-modern">
+            <div class="card-content">
+              <div class="level mb-4">
+                <div class="level-left">
+                  <div class="level-item">
+                    <div>
+                      <h1 class="title is-4">
+                        <i class="fas fa-play-circle mr-2 has-text-primary"></i>
+                        {{ video.title }}
+                      </h1>
+                      <p class="subtitle is-6 has-text-grey">
+                        <i class="fas fa-file mr-1"></i>{{ video.extension.upper() }} 
+                        • <i class="fas fa-hdd mr-1"></i>{{ (video.size / 1024 / 1024) | round(1) }} MB
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                <div class="level-right">
+                  <div class="level-item">
+                    <div class="buttons">
+                      <a href="/downloads" class="button is-light is-modern">
+                        <i class="fas fa-arrow-left mr-2"></i>
+                        Back to Downloads
+                      </a>
+                      <a href="/api/downloads/{{ video.filename | urlencode }}/download" 
+                         download="{{ video.filename }}"
+                         class="button is-success is-modern">
+                        <i class="fas fa-download mr-2"></i>
+                        Download
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Video Player -->
+              <div class="video-container">
+                <video 
+                  id="videoPlayer"
+                  class="video-player"
+                  controls 
+                  preload="metadata"
+                  poster=""
+                  width="100%">
+                  <source src="/api/stream/{{ video.filename | urlencode }}" type="video/{{ video.extension[1:] }}">
+                  <p>Your browser doesn't support HTML5 video. 
+                     <a href="/api/downloads/{{ video.filename | urlencode }}/download">Download the video</a> instead.
+                  </p>
+                </video>
+              </div>
+
+              <!-- Video Controls Info -->
+              <div class="content mt-4">
+                <div class="notification is-info is-light">
+                  <div class="columns">
+                    <div class="column">
+                      <h4 class="title is-6 mb-2">
+                        <i class="fas fa-info-circle mr-2"></i>
+                        Player Controls
+                      </h4>
+                      <ul class="is-size-7">
+                        <li><strong>Space:</strong> Play/Pause</li>
+                        <li><strong>←/→:</strong> Seek 10 seconds</li>
+                        <li><strong>↑/↓:</strong> Volume control</li>
+                        <li><strong>F:</strong> Fullscreen</li>
+                      </ul>
+                    </div>
+                    <div class="column">
+                      <h4 class="title is-6 mb-2">
+                        <i class="fas fa-cog mr-2"></i>
+                        Video Info
+                      </h4>
+                      <ul class="is-size-7">
+                        <li><strong>Format:</strong> {{ video.extension.upper() }}</li>
+                        <li><strong>Size:</strong> {{ (video.size / 1024 / 1024) | round(1) }} MB</li>
+                        <li><strong>File:</strong> {{ video.filename }}</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <style>
+    .video-container {
+      position: relative;
+      width: 100%;
+      background: #000;
+      border-radius: var(--border-radius);
+      overflow: hidden;
+      box-shadow: var(--card-shadow);
+    }
+    
+    .video-player {
+      width: 100%;
+      height: auto;
+      display: block;
+      max-height: 70vh;
+    }
+    
+    .video-player:focus {
+      outline: none;
+    }
+    
+    /* Dark theme adjustments */
+    html.dark .video-container {
+      background: #1a1a1a;
+    }
+  </style>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const video = document.getElementById('videoPlayer');
+      
+      // Add keyboard shortcuts
+      document.addEventListener('keydown', function(e) {
+        if (document.activeElement.tagName.toLowerCase() === 'input') return;
+        
+        switch(e.code) {
+          case 'Space':
+            e.preventDefault();
+            if (video.paused) {
+              video.play();
+            } else {
+              video.pause();
+            }
+            break;
+          case 'ArrowLeft':
+            e.preventDefault();
+            video.currentTime = Math.max(0, video.currentTime - 10);
+            break;
+          case 'ArrowRight':
+            e.preventDefault();
+            video.currentTime = Math.min(video.duration, video.currentTime + 10);
+            break;
+          case 'ArrowUp':
+            e.preventDefault();
+            video.volume = Math.min(1, video.volume + 0.1);
+            break;
+          case 'ArrowDown':
+            e.preventDefault();
+            video.volume = Math.max(0, video.volume - 0.1);
+            break;
+          case 'KeyF':
+            e.preventDefault();
+            if (video.requestFullscreen) {
+              video.requestFullscreen();
+            } else if (video.webkitRequestFullscreen) {
+              video.webkitRequestFullscreen();
+            } else if (video.msRequestFullscreen) {
+              video.msRequestFullscreen();
+            }
+            break;
+        }
+      });
+      
+      // Video event listeners
+      video.addEventListener('loadstart', function() {
+        console.log('Video loading started');
+      });
+      
+      video.addEventListener('canplay', function() {
+        console.log('Video can start playing');
+      });
+      
+      video.addEventListener('error', function(e) {
+        console.error('Video error:', e);
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'notification is-danger is-light mt-4';
+        errorDiv.innerHTML = `
+          <i class="fas fa-exclamation-triangle mr-2"></i>
+          <strong>Error loading video:</strong> The video file may be corrupted or in an unsupported format.
+          <br><small>Try downloading the file instead.</small>
+        `;
+        video.parentNode.appendChild(errorDiv);
+      });
+    });
+  </script>
+{% endblock %}

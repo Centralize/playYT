@@ -27,9 +27,22 @@ uvicorn --app-dir src playyt.webapp.main:app --reload --port 8000
 
 Then open http://localhost:8000 in your browser.
 
+## Features
+
+- **YouTube Search**: Real-time search with thumbnails and metadata
+- **Video Downloads**: Download videos in various formats using yt-dlp
+- **Downloads Management**: View and manage downloaded videos
+- **Dark/Light Theme**: Toggle between themes with persistent preference
+- **Responsive Design**: Works on desktop, tablet, and mobile
+- **Modern UI**: Built with Bulma CSS framework
+
+## Downloads
+
+Downloaded videos are stored in the `downloads/` directory. This directory is excluded from git tracking to prevent large video files from being committed to the repository.
+
 ## Status
 
-- Early scaffolding phase. Core code and modules will be added incrementally.
+- Fully functional YouTube client with search, download, and management features.
 
 ## License
 

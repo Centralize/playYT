@@ -22,7 +22,7 @@ pip install -r requirements.txt
 ### Run the Web UI (dev)
 
 ```bash
-uvicorn playyt.webapp.main:app --reload --port 8000
+uvicorn --app-dir src playyt.webapp.main:app --reload --port 8000
 ```
 
 Then open http://localhost:8000 in your browser.

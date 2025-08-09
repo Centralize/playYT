@@ -1,0 +1,55 @@
+---
+- name: Deploy playYT
+  hosts: playyt_hosts
+  become: true
+  vars:
+    repo_url: "git@github.com:your-org/playyt.git"  # Change to your repo URL
+    app_dir: "/opt/playyt"
+    branch: "main"
+    venv_path: "/opt/playyt/.venv"
+  tasks:
+    - name: Ensure required packages are present (Debian/Ubuntu)
+      apt:
+        name: [git, python3, python3-venv]
+        state: present
+        update_cache: yes
+      when: ansible_os_family == 'Debian'
+
+    - name: Ensure required packages are present (RHEL/CentOS)
+      yum:
+        name: [git, python3]
+        state: present
+      when: ansible_os_family == 'RedHat'
+
+    - name: Create app directory
+      file:
+        path: "{{ app_dir }}"
+        state: directory
+        mode: '0755'
+
+    - name: Clone or update repository
+      git:
+        repo: "{{ repo_url }}"
+        dest: "{{ app_dir }}"
+        version: "{{ branch }}"
+        force: yes
+        accept_hostkey: yes
+
+    - name: Create venv if missing
+      command: python3 -m venv "{{ venv_path }}"
+      args:
+        creates: "{{ venv_path }}/bin/activate"
+
+    - name: Upgrade pip
+      command: "{{ venv_path }}/bin/pip install -U pip"
+
+    - name: Install requirements if present
+      args:
+        chdir: "{{ app_dir }}"
+      shell: |
+        if [ -f requirements.txt ]; then \
+          "{{ venv_path }}/bin/pip" install -r requirements.txt; \
+        else \
+          echo "No requirements.txt"; \
+        fi
+

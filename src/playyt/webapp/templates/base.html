@@ -4,8 +4,12 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{{ title or 'playYT' }}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
     <link rel="stylesheet" href="/static/styles.css" />
     <style>
       /* Dark theme helpers */
@@ -18,10 +22,11 @@
     </style>
   </head>
   <body>
-    <nav class="navbar is-light" role="navigation" aria-label="main navigation">
+    <nav class="navbar is-modern is-fixed-top" role="navigation" aria-label="main navigation">
       <div class="container">
         <div class="navbar-brand">
           <a class="navbar-item" href="/">
+            <i class="fas fa-play-circle mr-2"></i>
             <strong>playYT</strong>
           </a>
           <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false" data-target="navbarBasic">
@@ -33,13 +38,20 @@
 
         <div id="navbarBasic" class="navbar-menu">
           <div class="navbar-start">
-            <a class="navbar-item" href="/">Home</a>
-            <a class="navbar-item" href="/search">Search</a>
+            <a class="navbar-item" href="/">
+              <i class="fas fa-home mr-2"></i>Home
+            </a>
+            <a class="navbar-item" href="/search">
+              <i class="fas fa-search mr-2"></i>Search
+            </a>
           </div>
           <div class="navbar-end">
             <div class="navbar-item">
               <div class="buttons">
-                <button id="themeToggle" class="button is-small" type="button">Toggle theme</button>
+                <button id="themeToggle" class="button is-small is-modern" type="button">
+                  <i class="fas fa-moon mr-1"></i>
+                  <span class="theme-text">Dark</span>
+                </button>
               </div>
             </div>
           </div>
@@ -47,11 +59,9 @@
       </div>
     </nav>
 
-    <section class="section">
-      <div class="container">
-        {% block content %}{% endblock %}
-      </div>
-    </section>
+    <main class="main-content">
+      {% block content %}{% endblock %}
+    </main>
 
     <script>
       // Simple burger menu toggle for mobile
@@ -65,18 +75,27 @@
 
         // Theme toggle
         const toggle = document.getElementById('themeToggle');
+        const themeIcon = toggle?.querySelector('i');
+        const themeText = toggle?.querySelector('.theme-text');
         const key = 'playyt.theme';
+
         const apply = (mode) => {
           if (mode === 'dark') {
             document.documentElement.classList.add('dark');
+            if (themeIcon) themeIcon.className = 'fas fa-sun mr-1';
+            if (themeText) themeText.textContent = 'Light';
           } else {
             document.documentElement.classList.remove('dark');
+            if (themeIcon) themeIcon.className = 'fas fa-moon mr-1';
+            if (themeText) themeText.textContent = 'Dark';
           }
         };
+
         const stored = localStorage.getItem(key);
         const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
         const initial = stored || (prefersDark ? 'dark' : 'light');
         apply(initial);
+
         if (toggle) {
           toggle.addEventListener('click', () => {
             const current = document.documentElement.classList.contains('dark') ? 'dark' : 'light';

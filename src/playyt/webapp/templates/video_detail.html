@@ -1,29 +1,118 @@
 {% extends "base.html" %}
 {% block content %}
   {% if not video %}
-    <div class="notification is-danger is-light">Video not found.</div>
+    <section class="section">
+      <div class="container">
+        <div class="has-text-centered">
+          <div class="notification is-danger is-light">
+            <i class="fas fa-exclamation-triangle fa-2x mb-4"></i>
+            <h2 class="title is-4">Video Not Found</h2>
+            <p>The video you're looking for doesn't exist or has been removed.</p>
+            <a href="/search" class="button is-primary is-modern mt-4">
+              <i class="fas fa-search mr-2"></i>
+              Search Videos
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
   {% else %}
-    <div class="columns">
-      <div class="column is-two-thirds">
-        <div class="content">
-          <h1 class="title">{{ video.title }}</h1>
-          <p class="subtitle">{{ video.channel }}</p>
-          <p><span class="tag is-info is-light">{{ video.duration }}</span></p>
-          <div class="box">
-            <p>{{ video.description }}</p>
+    <section class="section">
+      <div class="container">
+        <div class="columns is-desktop">
+          <div class="column is-8">
+            <div class="card is-modern mb-5">
+              {% if video.thumbnail %}
+              <div class="card-image">
+                <figure class="image is-16by9">
+                  <img src="{{ video.thumbnail }}" alt="{{ video.title }} thumbnail">
+                </figure>
+              </div>
+              {% endif %}
+              <div class="card-content">
+                <h1 class="title is-3 mb-4">{{ video.title }}</h1>
+
+                <div class="media mb-4">
+                  <div class="media-left">
+                    <i class="fas fa-user-circle fa-2x has-text-grey"></i>
+                  </div>
+                  <div class="media-content">
+                    <p class="title is-5 mb-1">{{ video.channel }}</p>
+                    <div class="tags">
+                      <span class="tag is-info is-modern">
+                        <i class="fas fa-clock mr-1"></i>{{ video.duration }}
+                      </span>
+                      {% if video.webpage_url %}
+                      <a href="{{ video.webpage_url }}" target="_blank" class="tag is-link is-modern">
+                        <i class="fab fa-youtube mr-1"></i>Watch on YouTube
+                      </a>
+                      {% endif %}
+                    </div>
+                  </div>
+                </div>
+
+                {% if video.description %}
+                <div class="content">
+                  <h3 class="title is-5">
+                    <i class="fas fa-info-circle mr-2"></i>Description
+                  </h3>
+                  <div class="box">
+                    <p class="video-description">{{ video.description[:500] }}{% if video.description|length > 500 %}...{% endif %}</p>
+                  </div>
+                </div>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+
+          <div class="column is-4">
+            <div class="card is-modern">
+              <div class="card-content">
+                <h3 class="title is-5 mb-4">
+                  <i class="fas fa-tools mr-2"></i>Actions
+                </h3>
+                <div class="buttons is-fullwidth">
+                  {% if video.webpage_url %}
+                  <a href="{{ video.webpage_url }}" target="_blank" class="button is-primary is-modern is-fullwidth">
+                    <i class="fas fa-play mr-2"></i>
+                    Watch on YouTube
+                  </a>
+                  {% endif %}
+                  <button class="button is-link is-modern is-fullwidth" type="button">
+                    <i class="fas fa-list mr-2"></i>
+                    Add to Playlist
+                  </button>
+                  <button class="button is-info is-modern is-fullwidth" type="button">
+                    <i class="fas fa-share mr-2"></i>
+                    Share Video
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div class="card is-modern mt-4">
+              <div class="card-content">
+                <h3 class="title is-5 mb-4">
+                  <i class="fas fa-info mr-2"></i>Video Info
+                </h3>
+                <div class="content">
+                  <p><strong>Channel:</strong> {{ video.channel }}</p>
+                  <p><strong>Duration:</strong> {{ video.duration }}</p>
+                  <p><strong>Video ID:</strong> <code>{{ video.id }}</code></p>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
-      <div class="column">
-        <div class="box">
-          <p class="has-text-weight-semibold mb-2">Actions</p>
-          <div class="buttons">
-            <button class="button is-primary is-light" type="button">Play</button>
-            <button class="button is-link is-light" type="button">Add to Playlist</button>
-          </div>
+
+        <div class="has-text-centered mt-6">
+          <a href="/search" class="button is-primary is-modern">
+            <i class="fas fa-arrow-left mr-2"></i>
+            Back to Search
+          </a>
         </div>
       </div>
-    </div>
+    </section>
   {% endif %}
 {% endblock %}
 

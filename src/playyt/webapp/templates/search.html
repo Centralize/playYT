@@ -1,45 +1,87 @@
 {% extends "base.html" %}
 {% block content %}
-  <div class="content">
-    <h1 class="title">Search</h1>
-  </div>
-  <form method="get" action="/search" class="field has-addons">
-    <div class="control is-expanded">
-      <input class="input" type="text" name="q" value="{{ query or '' }}" placeholder="Search videos..." />
-    </div>
-    <div class="control">
-      <button class="button is-primary" type="submit">Search</button>
-    </div>
-  </form>
+  <section class="hero is-modern is-medium">
+    <div class="hero-body">
+      <div class="container">
+        <div class="has-text-centered mb-6">
+          <h1 class="title is-2 has-text-white">
+            <i class="fas fa-search mr-3"></i>
+            Search YouTube
+          </h1>
+          <p class="subtitle is-5 has-text-white-ter">
+            Discover videos with our powerful search engine
+          </p>
+        </div>
 
-  {% if results is not none %}
-    <div class="content">
-      <h2 class="subtitle">Results</h2>
-    </div>
-    {% if results %}
-      <div class="columns is-multiline">
-        {% for v in results %}
-          <div class="column is-one-third">
-            <div class="card">
-              {% if v.thumbnail %}
-              <div class="card-image">
-                <figure class="image is-16by9">
-                  <img src="{{ v.thumbnail }}" alt="{{ v.title }} thumbnail">
-                </figure>
-              </div>
-              {% endif %}
-              <div class="card-content">
-                <p class="title is-6"><a href="/video/{{ v.id }}">{{ v.title }}</a></p>
-                <p class="subtitle is-7">{{ v.channel }}</p>
-                <span class="tag is-info is-light">{{ v.duration }}</span>
-              </div>
+        <form method="get" action="/search" class="search-form">
+          <div class="field has-addons">
+            <div class="control is-expanded">
+              <input class="input is-large" type="text" name="q" value="{{ query or '' }}"
+                     placeholder="Search for videos..." autofocus />
+            </div>
+            <div class="control">
+              <button class="button is-large" type="submit">
+                <i class="fas fa-search mr-2"></i>
+                Search
+              </button>
             </div>
           </div>
-        {% endfor %}
+        </form>
       </div>
-    {% else %}
-      <div class="notification is-warning is-light">No results found.</div>
-    {% endif %}
+    </div>
+  </section>
+
+  {% if results is not none %}
+    <section class="section">
+      <div class="container">
+        {% if query %}
+          <div class="content has-text-centered mb-6">
+            <h2 class="title is-4">
+              Search Results for "<span class="has-text-primary">{{ query }}</span>"
+            </h2>
+            <p class="subtitle is-6">Found {{ results|length }} result{{ 's' if results|length != 1 else '' }}</p>
+          </div>
+        {% endif %}
+
+        {% if results %}
+          <div class="columns is-multiline results-grid">
+            {% for v in results %}
+              <div class="column is-one-third video-card">
+                <div class="card is-modern">
+                  {% if v.thumbnail %}
+                  <div class="card-image">
+                    <figure class="image is-16by9">
+                      <img src="{{ v.thumbnail }}" alt="{{ v.title }} thumbnail" loading="lazy">
+                    </figure>
+                  </div>
+                  {% endif %}
+                  <div class="card-content">
+                    <p class="title is-6">
+                      <a href="/video/{{ v.id }}">{{ v.title }}</a>
+                    </p>
+                    <p class="subtitle is-7 mb-3">
+                      <i class="fas fa-user mr-1"></i>{{ v.channel }}
+                    </p>
+                    <div class="tags">
+                      <span class="tag is-info is-modern">
+                        <i class="fas fa-clock mr-1"></i>{{ v.duration }}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="has-text-centered">
+            <div class="notification is-warning is-light">
+              <i class="fas fa-exclamation-triangle mr-2"></i>
+              No results found for "{{ query }}". Try different keywords.
+            </div>
+          </div>
+        {% endif %}
+      </div>
+    </section>
   {% endif %}
 {% endblock %}
 

@@ -1,15 +1,81 @@
 {% extends "base.html" %}
 {% block content %}
-  <div class="content">
-    <h1 class="title">{{ title }}</h1>
-    <p>{{ message }}</p>
-    <p>API health: <span id="health">checking...</span></p>
-  </div>
+  <section class="hero is-modern is-medium">
+    <div class="hero-body">
+      <div class="container has-text-centered">
+        <h1 class="title is-1 has-text-white">
+          <i class="fas fa-play-circle mr-3"></i>
+          Welcome to playYT
+        </h1>
+        <p class="subtitle is-4 has-text-white-ter mb-5">
+          Your modern YouTube client with powerful search and customizable features
+        </p>
+        <div class="buttons is-centered">
+          <a href="/search" class="button is-large is-modern">
+            <i class="fas fa-search mr-2"></i>
+            Start Searching
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div class="columns is-centered">
+        <div class="column is-8">
+          <div class="content has-text-centered">
+            <h2 class="title is-3">Features</h2>
+            <div class="columns is-multiline">
+              <div class="column is-4">
+                <div class="card is-modern">
+                  <div class="card-content has-text-centered">
+                    <i class="fas fa-search fa-3x has-text-primary mb-4"></i>
+                    <h3 class="title is-5">Smart Search</h3>
+                    <p>Search YouTube videos with real-time results and thumbnails</p>
+                  </div>
+                </div>
+              </div>
+              <div class="column is-4">
+                <div class="card is-modern">
+                  <div class="card-content has-text-centered">
+                    <i class="fas fa-moon fa-3x has-text-info mb-4"></i>
+                    <h3 class="title is-5">Dark Mode</h3>
+                    <p>Toggle between light and dark themes for comfortable viewing</p>
+                  </div>
+                </div>
+              </div>
+              <div class="column is-4">
+                <div class="card is-modern">
+                  <div class="card-content has-text-centered">
+                    <i class="fas fa-mobile-alt fa-3x has-text-success mb-4"></i>
+                    <h3 class="title is-5">Responsive</h3>
+                    <p>Works perfectly on desktop, tablet, and mobile devices</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="has-text-centered mt-6">
+        <p class="subtitle is-6">
+          API Status: <span id="health" class="tag is-info loading">checking...</span>
+        </p>
+      </div>
+    </div>
+  </section>
+
   <script>
     fetch('/api/health').then(r => r.json()).then(d => {
-      document.getElementById('health').textContent = d.status;
+      const healthEl = document.getElementById('health');
+      healthEl.textContent = d.status === 'ok' ? 'Online' : 'Offline';
+      healthEl.className = d.status === 'ok' ? 'tag is-success' : 'tag is-danger';
     }).catch(() => {
-      document.getElementById('health').textContent = 'error';
+      const healthEl = document.getElementById('health');
+      healthEl.textContent = 'Offline';
+      healthEl.className = 'tag is-danger';
     });
   </script>
 {% endblock %}
